@@ -32,15 +32,58 @@ const examplePrompts: string[] = [
 function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = async (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && inputValue.trim() !== "") {
-      const newMessage: Message = {
-        role: "user",
-        content: inputValue.trim(),
-      };
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-      setInputValue("");
+      try {
+        setIsLoading(true);
+        const userMessage: Message = {
+          role: "user",
+          content: inputValue.trim(),
+        };
+        
+        // Add user message to chat
+        setMessages((prevMessages) => [...prevMessages, userMessage]);
+        
+        // Send message to backend
+        const response = await fetch('http://localhost:8000/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages,
+              { role: 'user', content: inputValue.trim() }
+            ],
+            model: 'gpt-3.5-turbo',
+            temperature: 0.7,
+            max_tokens: 1000
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to send message');
+        }
+
+        const data = await response.json();
+        
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: data.choices[0].message.content
+        };
+        
+        // Add AI response to chat
+        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+        
+        setInputValue("");
+      } catch (error) {
+        console.error("Error sending message:", error);
+        // Optionally add error handling UI here
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -139,6 +182,7 @@ function Chat() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
+            disabled={isLoading}
           />
           <Button
             // onClick={() => handleClearClick()}
