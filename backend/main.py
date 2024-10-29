@@ -1,15 +1,18 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import List, Optional
-from fastapi.middleware.cors import CORSMiddleware
+import os
 import time
+from typing import List, Optional
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from log_blog import ChatLogger
 
 # Initialize FastAPI app and chat logger
 app = FastAPI()
 chat_logger = ChatLogger()
 
-# Add CORS middleware
+# Add CORS middleware and static file mounting with error handling
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In production, replace with your frontend URL
@@ -17,6 +20,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Check if directories exist before mounting
+static_dir = "../frontend/build/static"
+assets_dir = "../frontend/build/assets"
+
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
 class Message(BaseModel):
     role: str
@@ -27,6 +39,15 @@ class ChatRequest(BaseModel):
     model: Optional[str] = "gpt-3.5-turbo"
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 1000
+
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    build_dir = "../frontend/build"
+    file_path = os.path.join(build_dir, full_path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+
+    return FileResponse(os.path.join(build_dir, "index.html"))
 
 @app.get("/api/health")
 async def health_check():
