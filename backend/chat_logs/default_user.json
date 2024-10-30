@@ -30,6 +30,24 @@
         "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key.",
         "feedback": "positive"
       }
+    },
+    {
+      "0": {
+        "role": "user",
+        "content": "Write some code for me"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "Certainly! I'd be happy to help you write some code. Could you tell me more about what you'd like to create? What programming language are you using, and what should the code do?"
+      },
+      "2": {
+        "role": "user",
+        "content": "hi"
+      },
+      "3": {
+        "role": "assistant",
+        "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+      }
     }
   ]
 }
