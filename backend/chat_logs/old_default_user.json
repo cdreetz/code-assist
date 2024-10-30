@@ -1,0 +1,136 @@
+{
+  "userid": "default_user",
+  "chats": [
+    {
+      "timestamp": "2024-10-28T14:10:46.183606",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-10-29T16:22:56.002127",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Write some code for me"
+        },
+        {
+          "role": "assistant",
+          "content": "Certainly! I'd be happy to help you write some code. Could you tell me more about what you'd like to create? What programming language are you using, and what should the code do?"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-10-30T10:45:49.083465",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-10-30T10:46:57.778546",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-10-30T10:47:12.022337",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        },
+        {
+          "role": "user",
+          "content": "whats up"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-10-30T10:47:23.598773",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-10-30T10:47:25.085975",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        },
+        {
+          "role": "user",
+          "content": "h"
+        },
+        {
+          "role": "assistant",
+          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+        }
+      ]
+    }
+  ]
+}

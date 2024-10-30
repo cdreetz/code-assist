@@ -40,6 +40,11 @@ class ChatRequest(BaseModel):
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 1000
 
+class FeedbackRequest(BaseModel):
+    message_index: int
+    feedback: str
+    messages: List[Message]
+
 @app.get("/{full_path:path}")
 async def serve_react_app(full_path: str):
     build_dir = "../frontend/build"
@@ -93,6 +98,24 @@ async def chat(request: ChatRequest):
 
         return response
 
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/feedback")
+async def save_feedback(request: FeedbackRequest):
+    try:
+        # For now using the last chat (most recent) for the default user
+        chats = chat_logger.get_user_chats("default_user")
+        if chats:
+            chat_index = len(chats) - 1
+            chat_logger.update_chat_feedback(
+                "default_user",
+                chat_index,
+                request.message_index,
+                request.feedback
+            )
+            return {"status": "success"}
+        return {"error": "No chats found"}
     except Exception as e:
         return {"error": str(e)}
 

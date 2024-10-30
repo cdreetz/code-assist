@@ -2,38 +2,34 @@
   "userid": "default_user",
   "chats": [
     {
-      "timestamp": "2024-10-28T14:10:46.183606",
-      "messages": [
-        {
-          "role": "user",
-          "content": "hi"
-        },
-        {
-          "role": "assistant",
-          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
-        }
-      ]
+      "0": {
+        "role": "user",
+        "content": "what is python"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
+      }
     },
     {
-      "timestamp": "2024-10-29T16:22:56.002127",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Write some code for me"
-        },
-        {
-          "role": "assistant",
-          "content": "Certainly! I'd be happy to help you write some code. Could you tell me more about what you'd like to create? What programming language are you using, and what should the code do?"
-        },
-        {
-          "role": "user",
-          "content": "hi"
-        },
-        {
-          "role": "assistant",
-          "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key."
-        }
-      ]
+      "0": {
+        "role": "user",
+        "content": "what is python"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key.",
+        "feedback": "negative"
+      },
+      "2": {
+        "role": "user",
+        "content": "what time is it"
+      },
+      "3": {
+        "role": "assistant",
+        "content": "This is a placeholder response. To use real OpenAI responses, configure the OpenAI API key.",
+        "feedback": "positive"
+      }
     }
   ]
 }

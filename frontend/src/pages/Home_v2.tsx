@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
 import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs";
 import "prismjs/components/prism-clike";
@@ -20,6 +20,7 @@ import "prismjs/themes/prism.css";
 interface Message {
   role: "assistant" | "user";
   content: string;
+  feedback?: "positive" | "negative";
 }
 
 const examplePrompts: string[] = [
@@ -133,6 +134,41 @@ function Chat() {
     setMessages([userMessage, assistantMessage]);
   };
 
+  const handleCopy = async (content: string) => {
+    await navigator.clipboard.writeText(content);
+    // Optionally add a toast notification here
+  };
+
+  const handleFeedback = async (messageIndex: number, feedback: "positive" | "negative") => {
+    try {
+      const updatedMessages = [...messages];
+      updatedMessages[messageIndex] = {
+        ...updatedMessages[messageIndex],
+        feedback
+      };
+      setMessages(updatedMessages);
+
+      // Send feedback to backend
+      const response = await fetch('http://localhost:8000/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message_index: messageIndex,
+          feedback,
+          messages: updatedMessages
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send feedback');
+      }
+    } catch (error) {
+      console.error("Error sending feedback:", error);
+    }
+  };
+
   return (
     <Card className="flex flex-col h-full">
       <CardHeader className="flex-shrink-0">
@@ -161,15 +197,44 @@ function Chat() {
           <ScrollArea className="flex-grow mb-2 border rounded h-full">
             <div className="p-2">
               {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`mb-2 p-2 rounded w-3/4 ${
-                    message.role === "assistant"
-                      ? "bg-blue-100 border border-blue-200 self-start"
-                      : "bg-gray-100 border border-gray-200 self-end ml-auto text-right"
-                  }`}
-                >
-                  {message.content}
+                <div key={index} className="mb-4">
+                  <div
+                    className={`p-2 rounded w-3/4 ${
+                      message.role === "assistant"
+                        ? "bg-blue-100 border border-blue-200 self-start"
+                        : "bg-gray-100 border border-gray-200 self-end ml-auto text-right"
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                  {message.role === "assistant" && (
+                    <div className="flex gap-2 mt-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleFeedback(index, "positive")}
+                      >
+                        <ThumbsUp className={`h-4 w-4 ${message.feedback === "positive" ? "text-green-500" : ""}`} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleFeedback(index, "negative")}
+                      >
+                        <ThumbsDown className={`h-4 w-4 ${message.feedback === "negative" ? "text-red-500" : ""}`} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleCopy(message.content)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

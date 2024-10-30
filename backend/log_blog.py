@@ -29,10 +29,12 @@ class ChatLogger:
         """Save a new chat conversation for a user."""
         chat_data = self.load_user_chats(user_id)
         
-        # Create a new chat entry with timestamp
+        # Create a new chat entry with messages mapped by index
         new_chat = {
-            "timestamp": datetime.now().isoformat(),
-            "messages": chat_messages
+            str(i): {
+                "role": msg["role"],
+                "content": msg["content"]
+            } for i, msg in enumerate(chat_messages)
         }
         
         chat_data["chats"].append(new_chat)
@@ -53,4 +55,20 @@ class ChatLogger:
         if os.path.exists(file_path):
             os.remove(file_path)
             return True
+        return False
+
+    def update_chat_feedback(self, user_id: str, chat_index: int, message_index: int, feedback: str) -> bool:
+        """Update feedback for a specific message in a chat."""
+        chat_data = self.load_user_chats(user_id)
+        
+        if chat_index < len(chat_data["chats"]):
+            # Update feedback for the specific message
+            message_key = str(message_index)
+            if message_key in chat_data["chats"][chat_index]:
+                chat_data["chats"][chat_index][message_key]["feedback"] = feedback
+                
+                file_path = self._get_user_file_path(user_id)
+                with open(file_path, 'w') as f:
+                    json.dump(chat_data, f, indent=2)
+                return True
         return False

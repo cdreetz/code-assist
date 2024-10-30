@@ -41,10 +41,24 @@ source env/bin/activate
 echo "Installing/updating dependencies..."
 pip install -r requirements.txt
 
+# Add trap to handle cleanup when script is interrupted
+cleanup() {
+    echo "Cleaning up..."
+    pkill -f "python main.py"
+    deactivate
+    exit 0
+}
+
+# Set up trap for SIGINT (Ctrl+C) and SIGTERM
+trap cleanup SIGINT SIGTERM
+
 # Check if FastAPI is already running
 if ! pgrep -f "python main.py" > /dev/null; then
     echo "Starting FastAPI server..."
-    python main.py &
+    python main.py
 else
     echo "FastAPI server is already running"
 fi
+
+# Keep script running to handle Ctrl+C properly
+wait
