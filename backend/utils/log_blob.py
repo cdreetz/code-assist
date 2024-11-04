@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 class ChatLogger:
-    def __init__(self, storage_dir: str = "chat_logs"):
+    def __init__(self, storage_dir: str = "../chat_logs"):
         """Initialize the chat logger with a storage directory."""
         self.storage_dir = storage_dir
         if not os.path.exists(storage_dir):

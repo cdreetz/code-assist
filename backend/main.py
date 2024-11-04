@@ -5,8 +5,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
-from log_blog import ChatLogger
+from backend.utils.log_blob import ChatLogger
+from backend.models.models import Message, ChatRequest, FeedbackRequest
 
 # Initialize FastAPI app and chat logger
 app = FastAPI()
@@ -29,21 +29,6 @@ if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 if os.path.exists(assets_dir):
     app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
-
-class Message(BaseModel):
-    role: str
-    content: str
-
-class ChatRequest(BaseModel):
-    messages: List[Message]
-    model: Optional[str] = "gpt-3.5-turbo"
-    temperature: Optional[float] = 0.7
-    max_tokens: Optional[int] = 1000
-
-class FeedbackRequest(BaseModel):
-    message_index: int
-    feedback: str
-    messages: List[Message]
 
 @app.get("/{full_path:path}")
 async def serve_react_app(full_path: str):
