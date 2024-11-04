@@ -1,16 +1,50 @@
 import os
 import time
 from typing import List, Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.exceptions import HTTPException
+from starlette.middleware.sessions import SessionMiddleware
 from backend.utils.log_blob import ChatLogger
 from backend.models.models import Message, ChatRequest, FeedbackRequest
+from .middleware import init_auth_middleware
 
 # Initialize FastAPI app and chat logger
 app = FastAPI()
 chat_logger = ChatLogger()
+
+# # Add session middleware first
+# app.add_middleware(
+#     SessionMiddleware,
+#     secret_key=os.getenv("SESSION_SECRET_KEY"),
+#     max_age=24 * 60 * 60  # 24 hours
+# )
+# 
+# # Initialize auth middleware
+# init_auth_middleware(app)
+# 
+# # Add auth routes
+# @app.get("/auth/login")
+# async def login(request: Request):
+#     auth_middleware = request.app.middleware_stack.middlewares[-1]  # Get auth middleware instance
+#     auth_url = auth_middleware.get_auth_url()
+#     return RedirectResponse(url=auth_url)
+# 
+# @app.get("/auth/callback")
+# async def callback(request: Request, code: str):
+#     auth_middleware = request.app.middleware_stack.middlewares[-1]  # Get auth middleware instance
+#     result = await auth_middleware.handle_auth_callback(code)
+#     
+#     if "error" in result:
+#         raise HTTPException(status_code=401, detail=result.get("error_description"))
+# 
+#     # Store user info in session
+#     request.session["user"] = result.get("id_token_claims")
+#     
+#     # Redirect to home page
+#     return RedirectResponse(url="/")
 
 # Add CORS middleware and static file mounting with error handling
 app.add_middleware(
