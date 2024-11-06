@@ -10,6 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from backend.utils.log_blob import ChatLogger
 from backend.models.models import Message, ChatRequest, FeedbackRequest
 from .middleware import init_auth_middleware
+from backend.config import settings
 
 # Initialize FastAPI app and chat logger
 app = FastAPI()
@@ -49,29 +50,25 @@ chat_logger = ChatLogger()
 # Add CORS middleware and static file mounting with error handling
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with your frontend URL
-    allow_credentials=True,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Check if directories exist before mounting
-static_dir = "../frontend/build/static"
-assets_dir = "../frontend/build/assets"
-
-if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
-if os.path.exists(assets_dir):
-    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+if os.path.exists(settings.STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
+if os.path.exists(settings.ASSETS_DIR):
+    app.mount("/assets", StaticFiles(directory=settings.ASSETS_DIR), name="assets")
 
 @app.get("/{full_path:path}")
 async def serve_react_app(full_path: str):
-    build_dir = "../frontend/build"
-    file_path = os.path.join(build_dir, full_path)
+    file_path = os.path.join(settings.BUILD_DIR, full_path)
     if os.path.isfile(file_path):
         return FileResponse(file_path)
 
-    return FileResponse(os.path.join(build_dir, "index.html"))
+    return FileResponse(os.path.join(settings.BUILD_DIR, "index.html"))
 
 @app.get("/api/health")
 async def health_check():
