@@ -7,10 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
-from backend.utils.log_blob import ChatLogger
-from backend.models.models import Message, ChatRequest, FeedbackRequest
-from .middleware import init_auth_middleware
-from backend.config import settings
+from utils.log_blob import ChatLogger
+from models.models import Message, ChatRequest, FeedbackRequest
+from middleware import init_auth_middleware
+from config import settings
+from openai import AzureOpenAI
 
 # Initialize FastAPI app and chat logger
 app = FastAPI()
@@ -76,6 +77,43 @@ async def health_check():
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
+    client = AzureOpenAI(
+        api_key=settings.AZURE_OPENAI_API_KEY,
+        azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+        api_version=settings.AZURE_OPENAI_API_VERSION,
+    )
+    try:
+        # Validate request format
+        if not request.messages or len(request.messages) == 0:
+            return {"error": "No messages provided"}
+
+        # Make the actual OpenAI API call
+        openai_response = await client.chat.completions.create(
+            model=request.model,
+            messages=[{"role": msg.role, "content": msg.content} for msg in request.messages],
+            temperature=request.temperature if request.temperature is not None else 0.7,
+            max_tokens=request.max_tokens if request.max_tokens is not None else 1000
+        )
+
+        # Log the chat messages
+        chat_messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
+        chat_messages.append({
+            "role": "assistant",
+            "content": openai_response.choices[0].message.content
+        })
+        chat_logger.save_chat("default_user", chat_messages)
+
+        print("Azure OpenAI Response:", openai_response)
+
+        return openai_response
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+
+@app.post("/api/chat-example")
+async def chat_example(request: ChatRequest):
     # Process the chat request in OpenAI format
     try:
         # Validate request format

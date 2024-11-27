@@ -1,2 +1,9 @@
 fastapi
 uvicorn
+itsdangerous
+msal
+pydantic-settings
+openai
+azure-storage-blob
+python-multipart
+gunicorn
