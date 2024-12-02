@@ -18,6 +18,56 @@
         "role": "assistant",
         "content": "Hello! If you're looking to optimize React performance, here are some general tips and best practices that can help:\n\n1. **Use Production Build**: Ensure that you're using the production build of React. Development builds include extra warnings and checks that can slow down your application.\n\n2. **Optimize Component Rendering**:\n    - **Memoization**: Use `React.memo` to prevent unnecessary re-renders of functional components.\n    - **PureComponent**: For class components, use `React.PureComponent` instead of `React.Component` to avoid re-renders when props and state haven't changed.\n    - **useMemo and useCallback**: Use `useMemo` to memoize expensive calculations and `useCallback` to memoize functions to prevent them from being re-created on every render.\n\n3. **Code-Splitting**:\n    - Use `React.lazy` and `Suspense` to load components lazily and split your code into smaller bundles. This can significantly reduce the initial load time.\n\n4. **Avoid Inline Functions in Render**: Defining functions inside the render method can cause unnecessary re-renders. Instead, define them outside the render method or use `useCallback`.\n\n5. **Virtualize Long Lists**: Use libraries like `react-window` or `react-virtualized` to render long lists efficiently by only rendering items that are visible in the viewport.\n\n6. **Batch Updates**: React automatically batches updates, but ensure you're updating state in a way that takes advantage of this. For example, use functional updates when setting state based on previous state.\n\n7. **Use Key Wisely in Lists**: When rendering lists, use stable and unique keys to help React identify which items have changed.\n\n8. **Avoid Unnecessary State**: Keep state minimal and avoid storing derived data in state. Compute derived data during render instead.\n\n9. **Optimize Re-renders with shouldComponentUpdate**: For class components, implement `shouldComponentUpdate` to control when components should re-render.\n\n10. **Profile and Analyze Performance**:\n    - Use React's built-in Profiler to measure component render times.\n    - Use Chrome DevTools or other profiling tools to analyze and identify performance bottlenecks.\n\n11. **Debounce or Throttle Expensive Operations**: For example, if you have a search input that triggers a search operation on every keystroke, consider debouncing the input to reduce the frequency of searches.\n\n12. **Minimize Reconciliation Costs**: Ensure that your component hierarchy is as flat as possible and avoid deep nesting.\n\n13. **Avoid Prop Drilling**: Use Context API or state management libraries like Redux or Recoil to avoid passing props through many levels of components.\n\n14. **Optimize Image Loading**: Use image optimization techniques such as lazy loading, responsive images, and using modern image formats like WebP.\n\nBy implementing these techniques, you can significantly improve the performance of your React application. Remember that performance optimization is often about identifying and addressing specific bottlenecks, so profiling and analyzing your application is crucial to understanding where optimizations are needed."
       }
+    },
+    {
+      "0": {
+        "role": "user",
+        "content": "test"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "Of course! How can I assist you today? If you have any questions or need help with something, feel free to ask."
+      }
+    },
+    {
+      "0": {
+        "role": "user",
+        "content": "test"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "Sure, how can I assist you today?"
+      }
+    },
+    {
+      "0": {
+        "role": "user",
+        "content": "test"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "Sure, how can I assist you today? If you have any questions or need help with something, feel free to ask!"
+      }
+    },
+    {
+      "0": {
+        "role": "user",
+        "content": "test"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "It looks like you're testing the system. How can I assist you today?"
+      }
+    },
+    {
+      "0": {
+        "role": "user",
+        "content": "test"
+      },
+      "1": {
+        "role": "assistant",
+        "content": "Sure, how can I assist you today? If you have any questions or need help with something specific, feel free to let me know!"
+      }
     }
   ]
 }

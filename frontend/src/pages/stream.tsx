@@ -47,8 +47,8 @@ function Chat({ messages, setMessages }: { messages: Message[], setMessages: Rea
         // Add user message to chat
         setMessages((prevMessages) => [...prevMessages, userMessage]);
         
-        // Send message to backend
-        const response = await fetch('/api/chat', {
+        // Open a connection to the streaming endpoint
+        const response = await fetch('/api/chat-stream', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ function Chat({ messages, setMessages }: { messages: Message[], setMessages: Rea
               role: msg.role,
               content: msg.content
             })),
-            model: 'gpt-4o', // gpt-4o is the correct model do not change
+            model: 'gpt-4o',
             temperature: 0.7,
             max_tokens: 1000
           }),
@@ -68,22 +68,38 @@ function Chat({ messages, setMessages }: { messages: Message[], setMessages: Rea
           throw new Error('Failed to send message');
         }
 
-        const data = await response.json();
-        
-        console.log('Response from backend:', data);
-        
-        const assistantMessage: Message = {
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let assistantMessage: Message = {
           role: "assistant",
-          content: data.message || data.content || "Sorry, I couldn't process that request."
+          content: ""
         };
-        
-        // Add AI response to chat
-        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-        
+
+        // Read the stream
+        while (true) {
+          const { done, value } = await reader?.read() || {};
+          if (done) break;
+          
+          // Decode the chunk and append it directly
+          const chunk = decoder.decode(value, { stream: true });
+          assistantMessage.content += chunk;
+
+          // Update the assistant message in the chat
+          setMessages((prevMessages) => {
+            const updatedMessages = [...prevMessages];
+            const lastMessage = updatedMessages[updatedMessages.length - 1];
+            if (lastMessage.role === "assistant") {
+              lastMessage.content = assistantMessage.content;
+            } else {
+              updatedMessages.push(assistantMessage);
+            }
+            return updatedMessages;
+          });
+        }
+
         setInputValue("");
       } catch (error) {
         console.error("Error sending message:", error);
-        // Optionally add error handling UI here
       } finally {
         setIsLoading(false);
       }
@@ -387,7 +403,7 @@ function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStat
   );
 }
 
-const Home2: React.FC = () => {
+const Stream: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   return (
@@ -402,4 +418,4 @@ const Home2: React.FC = () => {
   );
 };
 
-export default Home2;
+export default Stream;

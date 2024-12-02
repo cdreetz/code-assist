@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from utils.log_blob import ChatLogger
@@ -63,6 +63,28 @@ if os.path.exists(settings.STATIC_DIR):
 if os.path.exists(settings.ASSETS_DIR):
     app.mount("/assets", StaticFiles(directory=settings.ASSETS_DIR), name="assets")
 
+def get_client():
+    client = AzureOpenAI(
+        api_key=settings.AZURE_OPENAI_API_KEY,
+        azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+        api_version=settings.AZURE_OPENAI_API_VERSION,
+    )
+    return client
+
+
+def get_openai_generator(prompt):
+    client = get_client()
+    openai_stream = client.chat.completions.create(
+        model = settings.AZURE_OPENAI_DEPLOYMENT,
+        messages=[{"role":"user", "content": prompt}],
+        stream=True,
+    )
+    for event in openai_stream:
+        if "content" in event["choices"][0].delta:
+            current_response = event["choices"][0].delta.content
+            yield "data: " + current_response + "\n\n"
+
+
 @app.get("/{full_path:path}")
 async def serve_react_app(full_path: str):
     file_path = os.path.join(settings.BUILD_DIR, full_path)
@@ -75,13 +97,13 @@ async def serve_react_app(full_path: str):
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/api/stream")
+async def stream():
+    return StreamingResponse(get_openai_generator(prompt), media_type='text/event-stream')
+
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
-    client = AzureOpenAI(
-        api_key=settings.AZURE_OPENAI_API_KEY,
-        azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
-        api_version=settings.AZURE_OPENAI_API_VERSION,
-    )
+    client = get_client()
     try:
         # Validate request format
         if not request.messages or len(request.messages) == 0:
@@ -175,6 +197,38 @@ async def save_feedback(request: FeedbackRequest):
             return {"status": "success"}
         return {"error": "No chats found"}
     except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/chat-stream")
+async def chat_stream(request: ChatRequest):
+    client = get_client()
+    try:
+        # Validate request format
+        if not request.messages or len(request.messages) == 0:
+            return {"error": "No messages provided"}
+
+        # Create a generator for streaming responses
+        async def generate():
+            openai_stream = client.chat.completions.create(
+                model=settings.AZURE_OPENAI_DEPLOYMENT,
+                messages=[{"role": msg.role, "content": msg.content} for msg in request.messages],
+                stream=True,
+            )
+            
+            for event in openai_stream:
+                # Check if there are any choices
+                if hasattr(event, 'choices') and len(event.choices) > 0:
+                    # Access the delta attribute directly
+                    delta = event.choices[0].delta
+                    if hasattr(delta, "content") and delta.content is not None:
+                        # Just send the raw content
+                        yield f"{delta.content}"
+
+        # Return a streaming response
+        return StreamingResponse(generate(), media_type='text/event-stream')
+
+    except Exception as e:
+        print(f"Error in chat_stream: {str(e)}")  # Add logging
         return {"error": str(e)}
 
 if __name__ == "__main__":
