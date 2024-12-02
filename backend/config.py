@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     AZURE_OPENAI_API_KEY: str = "your_azure_openai_api_key"
     AZURE_OPENAI_ENDPOINT: str = "your_azure_openai_endpoint"
     AZURE_OPENAI_API_VERSION: str = "2024-05-13"
+    AZURE_OPENAI_DEPLOYMENT: str = "your-deployment-name"
     
     # CORS Settings
     CORS_ORIGINS: List[str] = ["*"]

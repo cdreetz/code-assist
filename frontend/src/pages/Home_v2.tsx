@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
+import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, Copy, ChevronDown, ChevronUp } from "lucide-react";
 import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs";
 import "prismjs/components/prism-clike";
@@ -16,9 +16,10 @@ import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
 import "prismjs/themes/prism.css";
 //import CodeEditor from "../components/CodeEditor";
+import { useState as useStateLocal } from "react";
 
 interface Message {
-  role: "assistant" | "user";
+  role: "assistant" | "user" | "system";
   content: string;
   feedback?: "positive" | "negative";
 }
@@ -30,8 +31,7 @@ const examplePrompts: string[] = [
   "Convert this code from one language to another",
 ];
 
-function Chat() {
-  const [messages, setMessages] = useState<Message[]>([]);
+function Chat({ messages, setMessages }: { messages: Message[], setMessages: React.Dispatch<React.SetStateAction<Message[]>> }) {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,17 +48,17 @@ function Chat() {
         setMessages((prevMessages) => [...prevMessages, userMessage]);
         
         // Send message to backend
-        const response = await fetch('http://localhost:8000/api/chat', {
+        const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: [
-              ...messages,
-              { role: 'user', content: inputValue.trim() }
-            ],
-            model: 'gpt-3.5-turbo',
+            messages: [...messages, userMessage].map(msg => ({
+              role: msg.role,
+              content: msg.content
+            })),
+            model: 'gpt-4o',
             temperature: 0.7,
             max_tokens: 1000
           }),
@@ -70,9 +70,11 @@ function Chat() {
 
         const data = await response.json();
         
+        console.log('Response from backend:', data);
+        
         const assistantMessage: Message = {
           role: "assistant",
-          content: data.choices[0].message.content
+          content: data.message || data.content || "Sorry, I couldn't process that request."
         };
         
         // Add AI response to chat
@@ -149,7 +151,7 @@ function Chat() {
       setMessages(updatedMessages);
 
       // Send feedback to backend
-      const response = await fetch('http://localhost:8000/api/feedback', {
+      const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,6 +169,36 @@ function Chat() {
     } catch (error) {
       console.error("Error sending feedback:", error);
     }
+  };
+
+  const SystemMessage = ({ content }: { content: string }) => {
+    const [isExpanded, setIsExpanded] = useStateLocal(false);
+    
+    // Extract the code from the content (assumes format: "Code saved:\n```python\n{code}\n```")
+    const code = content.split("```")[1]?.split("\n").slice(1, -1).join("\n") || "";
+    
+    return (
+      <div className="ml-auto w-fit">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`text-xs text-gray-500 hover:text-gray-700 ${isExpanded ? 'mb-2' : ''}`}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <div className="flex items-center gap-2">
+            <span>Code Saved</span>
+            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </div>
+        </Button>
+        {isExpanded && (
+          <div className="bg-gray-50 border border-gray-200 rounded p-2 max-w-[300px]">
+            <pre className="text-xs overflow-x-auto">
+              <code>{code}</code>
+            </pre>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -198,42 +230,46 @@ function Chat() {
             <div className="p-2">
               {messages.map((message, index) => (
                 <div key={index} className="mb-4">
-                  <div
-                    className={`p-2 rounded w-3/4 ${
-                      message.role === "assistant"
-                        ? "bg-blue-100 border border-blue-200 self-start"
-                        : "bg-gray-100 border border-gray-200 self-end ml-auto text-right"
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                  {message.role === "assistant" && (
-                    <div className="flex gap-2 mt-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleFeedback(index, "positive")}
-                      >
-                        <ThumbsUp className={`h-4 w-4 ${message.feedback === "positive" ? "text-green-500" : ""}`} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleFeedback(index, "negative")}
-                      >
-                        <ThumbsDown className={`h-4 w-4 ${message.feedback === "negative" ? "text-red-500" : ""}`} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleCopy(message.content)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  {message.role === "system" ? (
+                    <SystemMessage content={message.content} />
+                  ) : (
+                    <>
+                      <div className={`p-2 rounded w-3/4 ${
+                        message.role === "assistant"
+                          ? "bg-blue-100 border border-blue-200 self-start"
+                          : "bg-gray-100 border border-gray-200 self-end ml-auto text-right"
+                      }`}>
+                        {message.content}
+                      </div>
+                      {message.role === "assistant" && (
+                        <div className="flex gap-2 mt-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleFeedback(index, "positive")}
+                          >
+                            <ThumbsUp className={`h-4 w-4 ${message.feedback === "positive" ? "text-green-500" : ""}`} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleFeedback(index, "negative")}
+                          >
+                            <ThumbsDown className={`h-4 w-4 ${message.feedback === "negative" ? "text-red-500" : ""}`} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleCopy(message.content)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
@@ -262,7 +298,7 @@ function Chat() {
   );
 }
 
-function CodeEditor() {
+function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStateAction<Message[]>> }) {
   const [code, setCode] = useState("# Enter your Python code here");
   const [savedVersions, setSavedVersions] = useState([code]);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(0);
@@ -276,6 +312,15 @@ function CodeEditor() {
     console.log("Saving code:", code);
     setSavedVersions([...savedVersions, code]);
     setCurrentVersionIndex(savedVersions.length);
+    
+    // Create a system message for the chat
+    const systemMessage: Message = {
+      role: "system",
+      content: "Code saved:\n```python\n" + code + "\n```"
+    };
+    
+    // Update messages in Chat component
+    setMessages(prev => [...prev, systemMessage]);
   }
 
   const navigateVersion = (direction: 'prev' | 'next') => {
@@ -334,7 +379,7 @@ function CodeEditor() {
         </div>
         <div className="flex space-x-2">
           <Button onClick={saveCode} variant="outline">
-            Save Code
+            Save and Insert Code
           </Button>
         </div>
       </CardContent>
@@ -343,13 +388,15 @@ function CodeEditor() {
 }
 
 const Home2: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+
   return (
     <div className="flex justify-center p-4 h-[calc(100vh-4rem)] w-full">
       <div className="w-1/2 h-full pr-2">
-        <Chat />
+        <Chat messages={messages} setMessages={setMessages} />
       </div>
       <div className="w-1/2 h-full pl-2">
-        <CodeEditor />
+        <CodeEditor setMessages={setMessages} />
       </div>
     </div>
   );

@@ -87,25 +87,29 @@ async def chat(request: ChatRequest):
         if not request.messages or len(request.messages) == 0:
             return {"error": "No messages provided"}
 
-        # Make the actual OpenAI API call
-        openai_response = await client.chat.completions.create(
-            model=request.model,
+        # Make the OpenAI API call (removed 'await')
+        openai_response = client.chat.completions.create(
+            model=settings.AZURE_OPENAI_DEPLOYMENT,
             messages=[{"role": msg.role, "content": msg.content} for msg in request.messages],
             temperature=request.temperature if request.temperature is not None else 0.7,
             max_tokens=request.max_tokens if request.max_tokens is not None else 1000
         )
 
+        # Get the response content
+        response_content = openai_response.choices[0].message.content
+
         # Log the chat messages
         chat_messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
         chat_messages.append({
             "role": "assistant",
-            "content": openai_response.choices[0].message.content
+            "content": response_content
         })
         chat_logger.save_chat("default_user", chat_messages)
 
         print("Azure OpenAI Response:", openai_response)
 
-        return openai_response
+        # Return the response in the format the frontend expects
+        return {"message": response_content}
 
     except Exception as e:
         return {"error": str(e)}

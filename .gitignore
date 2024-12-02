@@ -3,5 +3,8 @@ build/
 
 .env
 env/
+config.py
 
 npm-debug.log*
+
+.azure/

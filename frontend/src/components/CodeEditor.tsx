@@ -72,7 +72,7 @@ const CodeEditor: React.FC = () => {
           />
         </div>
         <div className="flex space-x-2">
-          <Button onClick={saveCode} variant="outline">Save Code</Button>
+          <Button onClick={saveCode} variant="outline">Save and Insert Code</Button>
           <Button onClick={sendCodeToAI} variant="outline">Send Code to AI</Button>
         </div>
       </CardContent>
