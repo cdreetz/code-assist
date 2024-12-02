@@ -58,7 +58,7 @@ const CodeEditor: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className='flex-grow flex flex-col'>
-        <div className="flex-grow border rounded overflow-hidden mb-4">
+        <div className="flex-grow border rounded overflow-hidden mb-4 bg-gray-100">
           <Editor
             value={code}
             onValueChange={setCode}
@@ -68,6 +68,7 @@ const CodeEditor: React.FC = () => {
               fontFamily: '"Fira code", "Fira Mono", monospace',
               fontSize: 14,
               height: '100%',
+              backgroundColor: '#f3f4f6',
             }}
           />
         </div>

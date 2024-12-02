@@ -224,7 +224,7 @@ function Chat({ messages, setMessages }: { messages: Message[], setMessages: Rea
       </CardHeader>
       <CardContent className="flex-grow flex flex-col overflow-hidden">
         {messages.length === 0 ? (
-          <div className="flex-grow flex flex-col border rounded mb-2">
+          <div className="flex-grow flex flex-col rounded mb-2">
             <div className="flex justify-center items-center py-10">
               <h1 className="text-xl">What would you like help with?</h1>
             </div>
@@ -242,7 +242,7 @@ function Chat({ messages, setMessages }: { messages: Message[], setMessages: Rea
             </div>
           </div>
         ) : (
-          <ScrollArea className="flex-grow mb-2 border rounded h-full">
+          <ScrollArea className="flex-grow mb-2 rounded h-full">
             <div className="p-2">
               {messages.map((message, index) => (
                 <div key={index} className="mb-4">
@@ -380,7 +380,7 @@ function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStat
         </div>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col">
-        <div className="flex-grow border rounded overflow-hidden mb-2 h-full">
+        <div className="flex-grow border rounded overflow-hidden mb-2 h-full bg-gray-900">
           <Editor
             value={code}
             onValueChange={setCode}
@@ -390,6 +390,7 @@ function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStat
               fontFamily: '"Fira code", "Fira Mono", monospace',
               fontSize: 14,
               height: "100%",
+              backgroundColor: '#f3f4f6',
             }}
           />
         </div>
