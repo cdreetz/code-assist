@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import Home2 from "./pages/Home_v2";
 import Stream from "./pages/stream";
+import Stream2 from "./pages/stream2";
 
 const App: React.FC = () => {
   return (
@@ -17,15 +18,15 @@ const App: React.FC = () => {
                 <h1 className="text-xl font-semibold text-gray-800">AI Code Assistant</h1>
               </div>
               <nav className="flex space-x-4">
-                <a href="/" className="text-gray-600 hover:text-gray-900">Home</a>
-                <a href="/stream" className="text-gray-600 hover:text-gray-900">Code Stream</a>
+                <a href="/" className="text-gray-600 hover:text-gray-900">V2 (Current)</a>
+                <a href="/stream" className="text-gray-600 hover:text-gray-900">V3 (Dev)</a>
               </nav>
             </div>
           </header>
           <main className="h-[calc(100%-4rem)] w-full">
             <Routes>
-              <Route path="/" element={<Home2 />} />
-              <Route path="/stream" element={<Stream />} />
+              <Route path="/" element={<Stream />} />
+              <Route path="/stream" element={<Stream2 />} />
             </Routes>
           </main>
         </div>
