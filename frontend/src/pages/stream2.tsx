@@ -14,11 +14,11 @@ import { highlight, languages } from "prismjs";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
+import "prismjs/components/prism-sql";
 import "prismjs/themes/prism.css";
 //import CodeEditor from "../components/CodeEditor";
 import { useState as useStateLocal } from "react";
-import CodeEditor from '@uiw/react-textarea-code-editor';
-import rehypePrism from 'rehype-prism-plus';
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 
 interface Message {
@@ -322,12 +322,11 @@ function Chat({ messages, setMessages }: { messages: Message[], setMessages: Rea
 }
 
 function MyCodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStateAction<Message[]>> }) {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState("# Enter your Python code here");
   const [savedVersions, setSavedVersions] = useState([code]);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(0);
   const [language, setLanguage] = useState("python");
-  const [isDarkMode, setIsDarkMode] = useState(true);
-
+  
   const sendCodeToAI = () => {
     // Implement the logic to send code to AI
     console.log("Sending code to AI:", code);
@@ -358,96 +357,66 @@ function MyCodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetSt
 
   return (
     <Card className="flex flex-col h-full">
-      <CardHeader className="flex flex-row flex-shrink-0 items-center justify-between">
+      <CardHeader className="flex-shrink-0">
         <CardTitle>Your Code</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {currentVersionIndex === savedVersions.length - 1
-            ? "Current Working Code"
-            : "Old Version"
-          }
-        </p>
-        <div className="flex items-center space-x-2">
-          <Button
-            className="h-2"
-            variant="ghost"
-            size="icon"
-            onClick={() => navigateVersion('prev')}
-            disabled={currentVersionIndex === 0}
-          >
-            <ChevronLeft className="w-4 h-4"/>
-          </Button>
-          <span>{`${currentVersionIndex + 1} of ${savedVersions.length}`}</span>
-          <Button
-            className="h-2"
-            variant="ghost"
-            size="icon"
-            onClick={() => navigateVersion('next')}
-            disabled={currentVersionIndex === savedVersions.length - 1}
-          >
-            <ChevronRight className="w-4 h-4"/>
-          </Button>
-        </div>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col overflow-hidden">
+        <ScrollArea className="flex-grow border rounded mb-2 h-full">
+          <Editor
+            value={code}
+            onValueChange={setCode}
+            highlight={(code) => highlight(code, languages[language], language)}
+            padding={10}
+            style={{
+              fontFamily: '"Fira code", "Fira Mono", monospace',
+              fontSize: 14,
+              height: "100%",
+            }}
+          />
+        </ScrollArea>
         <div className="flex items-center justify-between space-x-2">
           <Button onClick={saveCode} variant="outline">
             Save and Insert Code
           </Button>
-          <div className="flex items-center gap-2">
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="h-8 text-sm border rounded px-2"
-            >
-              <option value="python">Python</option>
-              <option value="javascript">JavaScript</option>
-              <option value="clike">C-like</option>
-            </select>
-            <Button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              variant="outline"
-              size="sm"
-              className="h-8"
-            >
-              {isDarkMode ? "Light Mode" : "Dark Mode"}
-            </Button>
-          </div>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="h-8 text-sm border rounded px-2"
+          >
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="sql">SQL</option>
+            <option value="clike">C-like</option>
+          </select>
         </div>
-        <ScrollArea className="flex-grow border rounded mb-2 h-full">
-          <CodeEditor
-            value={code}
-            language={language}
-            onChange={(evn) => setCode(evn.target.value)}
-            padding={15}
-            rehypePlugins={[
-              [rehypePrism, { ignoreMissing: true, showLineNumbers: true }]
-            ]}
-            style={{
-              fontFamily: '"Fira code", "Fira Mono", monospace',
-              fontSize: 14,
-              minHeight: "100%",
-              backgroundColor: isDarkMode ? "#1e1e1e" : "#f5f5f5",
-              color: isDarkMode ? "#d4d4d4" : "#000000",
-            }}
-            data-color-mode={isDarkMode ? "dark" : "light"}
-          />
-        </ScrollArea>
       </CardContent>
     </Card>
   );
 }
+
+// Add this new component for the resize handle
+const ResizeHandle = () => {
+  return (
+    <PanelResizeHandle className="w-2 hover:bg-gray-200 transition-colors duration-150 mx-2">
+      <div className="h-1/4 w-1 bg-gray-300 mx-auto my-auto translate-y-[150%]" />
+    </PanelResizeHandle>
+  );
+};
 
 const Stream: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   return (
     <div className="flex justify-center p-4 h-[calc(100vh-4rem)] w-full">
-      <div className="w-1/2 h-full pr-2">
-        <Chat messages={messages} setMessages={setMessages} />
-      </div>
-      <div className="w-1/2 h-full pl-2">
-        <MyCodeEditor setMessages={setMessages} />
-      </div>
+      <PanelGroup direction="horizontal">
+        <Panel defaultSize={50} minSize={30}>
+          <Chat messages={messages} setMessages={setMessages} />
+        </Panel>
+        <ResizeHandle />
+        <Panel defaultSize={50} minSize={20}>
+          <MyCodeEditor setMessages={setMessages} />
+        </Panel>
+      </PanelGroup>
     </div>
   );
 };

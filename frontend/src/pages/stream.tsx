@@ -14,9 +14,11 @@ import { highlight, languages } from "prismjs";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
+import "prismjs/components/prism-sql";
 import "prismjs/themes/prism.css";
 //import CodeEditor from "../components/CodeEditor";
 import { useState as useStateLocal } from "react";
+
 
 interface Message {
   role: "assistant" | "user" | "system";
@@ -318,11 +320,12 @@ function Chat({ messages, setMessages }: { messages: Message[], setMessages: Rea
   );
 }
 
-function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStateAction<Message[]>> }) {
+function MyCodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStateAction<Message[]>> }) {
   const [code, setCode] = useState("# Enter your Python code here");
   const [savedVersions, setSavedVersions] = useState([code]);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(0);
-
+  const [language, setLanguage] = useState("python");
+  
   const sendCodeToAI = () => {
     // Implement the logic to send code to AI
     console.log("Sending code to AI:", code);
@@ -336,7 +339,7 @@ function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStat
     // Create a system message for the chat
     const systemMessage: Message = {
       role: "system",
-      content: "Code saved:\n```python\n" + code + "\n```"
+      content: "Code saved:\n```" + language + "\n" + code + "\n```"
     };
     
     // Update messages in Chat component
@@ -388,7 +391,7 @@ function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStat
           <Editor
             value={code}
             onValueChange={setCode}
-            highlight={(code) => highlight(code, languages.python, "python")}
+            highlight={(code) => highlight(code, languages[language], language)}
             padding={10}
             style={{
               fontFamily: '"Fira code", "Fira Mono", monospace',
@@ -397,10 +400,20 @@ function CodeEditor({ setMessages }: { setMessages: React.Dispatch<React.SetStat
             }}
           />
         </ScrollArea>
-        <div className="flex space-x-2">
+        <div className="flex items-center justify-between space-x-2">
           <Button onClick={saveCode} variant="outline">
             Save and Insert Code
           </Button>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="h-8 text-sm border rounded px-2"
+          >
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="sql">SQL</option>
+            <option value="clike">C-like</option>
+          </select>
         </div>
       </CardContent>
     </Card>
@@ -416,7 +429,7 @@ const Stream: React.FC = () => {
         <Chat messages={messages} setMessages={setMessages} />
       </div>
       <div className="w-1/2 h-full pl-2">
-        <CodeEditor setMessages={setMessages} />
+        <MyCodeEditor setMessages={setMessages} />
       </div>
     </div>
   );
